@@ -31,11 +31,9 @@ export const QuestionElement = (props: any) => {
                 >
                     {setIsDragging(draggableSnapshot.isDragging)}
                     {isDragging && (
-                        <StyledDraggingOval>
-                            <Typography variant={"h1"} color={"white"}>
-                                {"Question"}
-                            </Typography>
-                        </StyledDraggingOval>
+                        <div>
+                            DRAGGING
+                        </div>
                     )}
                     <EditableBlockContainer
                         dragHandleProps={draggableProvided.dragHandleProps}
@@ -63,7 +61,7 @@ export const QuestionElement = (props: any) => {
                                                             style={{userSelect: "none"}}
                                                             contentEditable={false}
                                                         >
-                                                            "Question
+                                                            Question
                                                         </Typography>
 
                                                     </StyledHeaderRow>
@@ -116,15 +114,4 @@ const StyledHeaderRow = styled("div")(({theme}) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-}));
-const StyledDraggingOval = styled("div")(({theme}) => ({
-    position: "absolute",
-    filter: "drop-shadow(0px 2px 16px rgba(66, 84, 102, 0.24))",
-    backgroundColor: "#D53964",
-    width: "250px",
-    height: "50px",
-    borderRadius: "50px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
 }));
