@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
     Draggable,
     DraggableProvided,
@@ -15,7 +15,21 @@ import {EditableBlockContainer} from "./EditableBlockContainer";
  */
 export const DraggableDefaultElement = (props: any) => {
     const editor = useSlate();
-    const path = ReactEditor.findPath(editor, props.element);
+
+    const [path, setPath] = useState([0,0,0])
+
+    const getPath = () => {
+        try{
+            setPath(ReactEditor.findPath(editor, props.element))
+        }catch (e) {
+            console.log("ERROR GETTING PATH",e)
+        }
+    }
+
+    useEffect(() => {
+        getPath()
+    },[editor, props.element])
+
 
     const [isDragging, setIsDragging] = useState(false);
 

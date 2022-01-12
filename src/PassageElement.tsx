@@ -1,6 +1,6 @@
 import {Divider} from "@mui/material";
 import {styled} from "@mui/material/styles";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Draggable, Droppable} from "react-beautiful-dnd";
 import {ReactEditor, useSlate} from "slate-react";
 import {EditableBlockContainer} from "./EditableBlockContainer";
@@ -15,7 +15,21 @@ export const PassageElement = (props: any) => {
     const [isDragging, setIsDragging] = useState(false);
 
     const editor = useSlate();
-    const path = ReactEditor.findPath(editor, props.element);
+
+    const [path, setPath] = useState([0,0,0])
+
+
+    const getPath = () => {
+        try{
+            setPath(ReactEditor.findPath(editor, props.element))
+        }catch (e) {
+            console.log("ERROR GETTING PATH",e)
+        }
+    }
+
+    useEffect(() => {
+        getPath()
+    },[editor, props.element])
 
     return (
         <Draggable

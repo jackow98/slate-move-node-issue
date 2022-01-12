@@ -1,19 +1,14 @@
 import {styled} from "@mui/material/styles";
-import React, {FC, useEffect, useRef, useState} from "react";
-import {
-    DragDropContext,
-    DropResult,
-    ResponderProvided,
-} from "react-beautiful-dnd";
-import {createEditor, Descendant, Editor, Path, Transforms} from "slate";
+import React, {FC, useEffect, useState} from "react";
+import {DragDropContext, DropResult, ResponderProvided,} from "react-beautiful-dnd";
+import {createEditor, Descendant, Path, Transforms} from "slate";
 import {ReactEditor, withReact} from "slate-react";
-import {getNestedObjectByKey, getNodeFromPath, getUniqueId} from "./helpers";
+import {getNestedObjectByKey, getUniqueId} from "./helpers";
 import {EmptyBlocks} from "./blockCreateTabContent";
 import {SlateEditor} from "./SlateEditor";
 import {Sidebar} from "./Sidebar";
 import {BLOCK_TYPES, CustomElement} from "./custom-editor-types";
 import {RESOURCE_TEMPLATES} from "./ResourceExamples";
-import { Text } from 'slate';
 
 
 /**
@@ -22,6 +17,8 @@ import { Text } from 'slate';
  * @constructor
  */
 export const EditorScreen: FC = () => {
+
+    const [nodeToMove, setNodeToMove] = useState<{type: "REMOVE", node: CustomElement, oldPath: number[], newPath: number[]} | {type: "INSERT", node: CustomElement, newPath: number[]} | null>(null)
 
     //CREATE EDITOR: OPTION 1
     // Create a Slate editor object that won't change across renders.
@@ -54,6 +51,27 @@ export const EditorScreen: FC = () => {
     const [value, setValue] = useState<Descendant[]>(RESOURCE_TEMPLATES["Blank"]);
     // const debouncedValueChange = useDebounce(value, 1000);
 
+    useEffect(() => {
+        if(nodeToMove?.type === "REMOVE" && editor){
+            console.log("REMOVING")
+            try {
+                //Do not need to get the parent ID here as this will be retrieved and inserted on debounce
+                Transforms.removeNodes(editor, {
+                    at: nodeToMove.oldPath,
+                });
+                setNodeToMove({type: "INSERT", node: nodeToMove.node, newPath: nodeToMove.newPath})
+            } catch (e) {
+                console.log(e)
+            }
+        }else if(nodeToMove?.type === "INSERT" && editor ){
+            console.log("INSERTING")
+            console.log(nodeToMove)
+
+            // insertNodeIntoValue({id:"TEST", type: BLOCK_TYPES.PARAGRAPH, children:[{text: "TEST"}]}, [0,0,0])
+            insertNodeIntoValue(nodeToMove.node, nodeToMove.newPath)
+            setNodeToMove(null)
+        }
+    },[value])
 
     /**
      * Step 1 of saving a block to the resource
@@ -180,48 +198,27 @@ export const EditorScreen: FC = () => {
                     getNestedObjectByKey(editor.children, result.destination.droppableId)
                 );
 
-                // droppablePath.splice(
-                //   droppablePath.length,
-                //   0,
-                //   result.destination?.index!
-                // );
+                droppablePath.splice(
+                  droppablePath.length,
+                  0,
+                  result.destination?.index!
+                );
 
 
                 // Transforms.removeNodes(editor, {at: draggablePath})
 
+                setNodeToMove({
+                    type: "REMOVE",
+                    node: draggableNode,
+                    oldPath: draggablePath,
+                    newPath: droppablePath
+                })
+
                 const jsonEditor = Array.from(editor.children)
                 console.log("REACT EDITOR", jsonEditor)
 
-                const nodeToMove = draggableNode
-                console.log("NODE TO MOVE", nodeToMove)
-
-                // try{
-                //     const nodeToMoveNoChildren = {...nodeToMove, children:[]}
-                //
-                //     const path = ReactEditor.findPath(editor, nodeToMoveNoChildren)
-                //     console.log("REACT EDITOR ATTEMPT TO GET PATH OF NODE BEING MOVED", path)
-                // }catch (e){
-                //     console.log(e)
-                // }
-
-                let path = ReactEditor.findPath(editor, nodeToMove)
-
-                console.log("REACT DRAGGABLE PATH", draggablePath)
-                console.log("REACT DROPPABLE PATH", droppablePath)
-
-                // Transforms.insertNodes(editor, draggableNode,{at: droppablePath})
-
                 //@ts-expect-error
-                if(getNodeFromPath(editor.children, droppablePath).type === "resource"){
-                    droppablePath.push(0)
-                }
-
-                console.log(Text.isText({text: ""}))
-
-                console.log("REACT DROPPABLE PATH", droppablePath)
-                Editor.withoutNormalizing(editor, () => Transforms.deselect(editor))
-                Editor.withoutNormalizing(editor, () => Transforms.moveNodes(editor, {at: path, to: droppablePath}))
-                // Edi Transforms.insertNodes(editor, nodeToMove,{at: droppablePath});
+                 Transforms.setNodes(editor, {test:"test"},{at: draggablePath})
                 console.log(editor)
             } catch (e) {
                 console.log("could not move block")
