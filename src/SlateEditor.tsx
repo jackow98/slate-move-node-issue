@@ -50,6 +50,16 @@ export const SlateEditor: FC<SlateEditorProps> = ({
         return <Leaf {...props} />;
     }, []);
 
+    const onDragHandle = (event: React.DragEvent<HTMLDivElement>) => {
+        // Implement custom event logic...
+
+        console.log(event)
+
+        // No matter the status of the event, treat event as *not* being handled by
+        // returning false, Slate will execute its own event handler afterward
+        return true;
+    };
+
     // Render the Slate context.
     return (
         <Slate editor={editor} value={value} onChange={setValue}>
@@ -58,6 +68,21 @@ export const SlateEditor: FC<SlateEditorProps> = ({
                     style={{width: "100%"}}
                     renderLeaf={renderLeaf}
                     renderElement={renderElement}
+                    onDrop={onDragHandle}
+                    onDragStart={onDragHandle}
+                    onDragEnd={onDragHandle}
+                    onDragCapture={onDragHandle}
+                    onDragEndCapture={onDragHandle}
+                    onDragEnter={onDragHandle}
+                    onDragEnterCapture={onDragHandle}
+                    onDragExit={onDragHandle}
+                    onDrag={onDragHandle}
+                    onDragExitCapture={onDragHandle}
+                    onDragLeave={onDragHandle}
+                    onDragLeaveCapture={onDragHandle}
+                    onDragOver={onDragHandle}
+                    onDragOverCapture={onDragHandle}
+                    onDragStartCapture={onDragHandle}
                 />
             </CustomEditor>
         </Slate>

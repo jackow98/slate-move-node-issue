@@ -7,12 +7,14 @@ import {
 } from "react-beautiful-dnd";
 import {createEditor, Descendant, Editor, Path, Transforms} from "slate";
 import {ReactEditor, withReact} from "slate-react";
-import {getNestedObjectByKey, getUniqueId} from "./helpers";
+import {getNestedObjectByKey, getNodeFromPath, getUniqueId} from "./helpers";
 import {EmptyBlocks} from "./blockCreateTabContent";
 import {SlateEditor} from "./SlateEditor";
 import {Sidebar} from "./Sidebar";
 import {BLOCK_TYPES, CustomElement} from "./custom-editor-types";
 import {RESOURCE_TEMPLATES} from "./ResourceExamples";
+import { Text } from 'slate';
+
 
 /**
  * Screen for the resource editor
@@ -34,22 +36,20 @@ export const EditorScreen: FC = () => {
     // );
 
     //CREATE EDITOR: OPTION 2
-    // const [editor] = useState(() =>
-    //   withReact(
-    //     withHistory(
-    //       withInlines(withCustomNormaliser(createEditor(), toggleToolBar))
-    //     )
-    //   )
-    // );
+    const [editor] = useState(() =>
+      withReact(createEditor())
+    );
 
     //CREATE EDITOR: OPTION 3
-    const editorRef = useRef();
-    if (!editorRef.current)
-        //@ts-expect-error
-        editorRef.current = withReact(createEditor());
+    // const editorRef = useRef();
+    // if (!editorRef.current)
+    //     //@ts-expect-error
+    //     editorRef.current = withReact(createEditor());
+    //
+    // const editor: (Editor & ReactEditor) | undefined =
+    //     editorRef?.current || undefined;
 
-    const editor: (Editor & ReactEditor) | undefined =
-        editorRef?.current || undefined;
+
 
     const [value, setValue] = useState<Descendant[]>(RESOURCE_TEMPLATES["Blank"]);
     // const debouncedValueChange = useDebounce(value, 1000);
@@ -108,7 +108,6 @@ export const EditorScreen: FC = () => {
      * @param result
      */
     const handleCreateNewTemplateBlockFromDrag = (result: DropResult) => {
-        //@ts-expect-error
         if (editor && editor?.children) {
             if (
                 !checkDragMoveIsValidOnAdd(
@@ -135,7 +134,6 @@ export const EditorScreen: FC = () => {
             } else {
                 const droppablePath: number[] = ReactEditor.findPath(
                     editor,
-                    //@ts-expect-error
                     getNestedObjectByKey(editor.children, result.destination?.droppableId)
                 );
 
@@ -163,12 +161,10 @@ export const EditorScreen: FC = () => {
      * @param result
      */
     const handleMoveBlockWithinResource = (result: any) => {
-        //@ts-expect-error
         if (editor && editor?.children) {
             try {
 
                 const draggableNode = getNestedObjectByKey(
-                    //@ts-expect-error
                     editor.children,
                     result.draggableId
                 );
@@ -181,7 +177,6 @@ export const EditorScreen: FC = () => {
 
                 const droppablePath: number[] = ReactEditor.findPath(
                     editor,
-                    //@ts-expect-error
                     getNestedObjectByKey(editor.children, result.destination.droppableId)
                 );
 
@@ -191,7 +186,43 @@ export const EditorScreen: FC = () => {
                 //   result.destination?.index!
                 // );
 
-                Transforms.moveNodes(editor, {at: draggablePath, to: droppablePath});
+
+                // Transforms.removeNodes(editor, {at: draggablePath})
+
+                const jsonEditor = Array.from(editor.children)
+                console.log("REACT EDITOR", jsonEditor)
+
+                const nodeToMove = draggableNode
+                console.log("NODE TO MOVE", nodeToMove)
+
+                // try{
+                //     const nodeToMoveNoChildren = {...nodeToMove, children:[]}
+                //
+                //     const path = ReactEditor.findPath(editor, nodeToMoveNoChildren)
+                //     console.log("REACT EDITOR ATTEMPT TO GET PATH OF NODE BEING MOVED", path)
+                // }catch (e){
+                //     console.log(e)
+                // }
+
+                let path = ReactEditor.findPath(editor, nodeToMove)
+
+                console.log("REACT DRAGGABLE PATH", draggablePath)
+                console.log("REACT DROPPABLE PATH", droppablePath)
+
+                // Transforms.insertNodes(editor, draggableNode,{at: droppablePath})
+
+                //@ts-expect-error
+                if(getNodeFromPath(editor.children, droppablePath).type === "resource"){
+                    droppablePath.push(0)
+                }
+
+                console.log(Text.isText({text: ""}))
+
+                console.log("REACT DROPPABLE PATH", droppablePath)
+                Editor.withoutNormalizing(editor, () => Transforms.deselect(editor))
+                Editor.withoutNormalizing(editor, () => Transforms.moveNodes(editor, {at: path, to: droppablePath}))
+                // Edi Transforms.insertNodes(editor, nodeToMove,{at: droppablePath});
+                console.log(editor)
             } catch (e) {
                 console.log("could not move block")
             }

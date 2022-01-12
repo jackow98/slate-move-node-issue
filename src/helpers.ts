@@ -93,3 +93,29 @@ export const createNewIdsForChildBlocks = (element: CustomElement) => {
     }
     return element;
 };
+
+/**
+ * Retrieves a node from a given path within the provided resource
+ * @param resource
+ * @param index
+ * @param includeTextNode
+ */
+export const getNodeFromPath = (
+    resource: CustomElement[],
+    index: number[],
+    includeTextNode?: boolean
+) => {
+    let curr: CustomElement | undefined = Array.from(resource)[0];
+
+    const limit = includeTextNode ? index.length : index.length - 1;
+
+    for (let i = 1; i < limit; i++) {
+        try {
+            //@ts-expect-error
+            curr = curr.children[index[i]];
+        } catch (e) {
+            return undefined;
+        }
+    }
+    return curr;
+};
