@@ -1,6 +1,4 @@
-import {
-    Box, IconButton,
-} from "@mui/material";
+import {Box, IconButton,} from "@mui/material";
 import {styled} from "@mui/material/styles";
 import React, {CSSProperties, FC} from "react";
 import {CustomElement} from "./custom-editor-types";
@@ -39,7 +37,7 @@ export const EditableBlockContainer: FC<EditableBlockContainerProps> = ({
             }}
             style={style}
         >
-            <IconButton sx={{marginRight: "20px"}} {...dragHandleProps}>
+            <IconButton sx={{marginRight: "20px"}}>
                 <DragIndicatorIcon/>
             </IconButton>
             <StyledContainer>{children}</StyledContainer>

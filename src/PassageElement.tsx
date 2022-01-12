@@ -1,8 +1,7 @@
 import {Divider} from "@mui/material";
 import {styled} from "@mui/material/styles";
 import React, {useState} from "react";
-import {Draggable, Droppable} from "react-beautiful-dnd";
-import {ReactEditor, useSlate} from "slate-react";
+import {Droppable} from "react-beautiful-dnd";
 import {EditableBlockContainer} from "./EditableBlockContainer";
 
 /**
@@ -14,67 +13,41 @@ import {EditableBlockContainer} from "./EditableBlockContainer";
 export const PassageElement = (props: any) => {
     const [isDragging, setIsDragging] = useState(false);
 
-    const editor = useSlate();
-    const path = ReactEditor.findPath(editor, props.element);
-
     return (
-        <Draggable
-            key={props.element.id}
-            draggableId={props.element.id}
-            index={path[2]}
-        >
-            {(draggableProvided, draggableSnapshot) => (
-                <div
-                    ref={draggableProvided.innerRef}
-                    {...draggableProvided.draggableProps}
-                >
-                    {setIsDragging(draggableSnapshot.isDragging)}
-                    {isDragging && (
-                        <div>
-                            DRAGGING
-                        </div>
-                    )}
+        <div
 
-                    <EditableBlockContainer
-                        element={props.element}
-                        dragHandleProps={draggableProvided.dragHandleProps}
-                        {...props.attributes}
-                        id={props.element.id}
-                    >
-                        <Droppable droppableId={props.element.id}>
-                            {(droppableProvided, droppableSnapshot) => (
-                                <div
-                                    {...droppableProvided.droppableProps}
-                                    ref={droppableProvided.innerRef}
-                                    style={{width: "100%"}}
+        >
+            <EditableBlockContainer
+                {...props.attributes}
+                element={props.element}
+            >
+                        <div
+
+                            style={{width: "100%"}}
+                        >
+                            {!isDragging && (
+                                <StyledPassageContainer
                                 >
-                                    {!isDragging && (
-                                        <StyledPassageContainer
-                                        >
-                                            <StyledHeaderBox
-                                                style={{userSelect: "none"}}
-                                                contentEditable={false}
-                                            >
-                                                <StyledHeaderBarHeader>
-                                                    <StyledTitleAndDescriptionColumn>
-                                                        Passage element
-                                                    </StyledTitleAndDescriptionColumn>
-                                                </StyledHeaderBarHeader>
-                                                <Divider style={{marginBottom: "20px"}}/>
-                                            </StyledHeaderBox>
-                                            <StyledResourceChildrenContainer>
-                                                {props.children}
-                                                {droppableProvided.placeholder}
-                                            </StyledResourceChildrenContainer>
-                                        </StyledPassageContainer>
-                                    )}
-                                </div>
+                                    <StyledHeaderBox
+                                        style={{userSelect: "none"}}
+                                        contentEditable={false}
+                                    >
+                                        <StyledHeaderBarHeader>
+                                            <StyledTitleAndDescriptionColumn>
+                                                Passage element
+                                            </StyledTitleAndDescriptionColumn>
+                                        </StyledHeaderBarHeader>
+                                        <Divider style={{marginBottom: "20px"}}/>
+                                    </StyledHeaderBox>
+                                    <StyledResourceChildrenContainer>
+                                        {props.children}
+                                    </StyledResourceChildrenContainer>
+                                </StyledPassageContainer>
                             )}
-                        </Droppable>
-                    </EditableBlockContainer>
-                </div>
-            )}
-        </Draggable>
+                        </div>
+
+            </EditableBlockContainer>
+        </div>
     );
 };
 

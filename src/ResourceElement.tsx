@@ -1,7 +1,6 @@
 import {Typography} from "@mui/material";
 import {styled} from "@mui/material/styles";
 import React from "react";
-import {Droppable, DroppableProvided, DroppableStateSnapshot} from "react-beautiful-dnd";
 import {EditableBlockContainer} from "./EditableBlockContainer";
 
 /**
@@ -18,41 +17,15 @@ export const ResourceElement = (props: { attributes: JSX.IntrinsicAttributes; el
      * @param index
      */
     const renderSectionBreaker = (index: number) => (
-        <Droppable droppableId={`resource-breaker-${index}`}>
-            {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-                <StyledSectionBreakerContainer
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    contentEditable={false}
-                    style={{
-                        userSelect: "none",
-                    }}
-                >
-                    <StyledSectionBreakerInner
-                        style={{
-                            border: snapshot.isDraggingOver
-                                ? snapshot.draggingOverWith === "section"
-                                    ? "2px solid #D53964"
-                                    : 0
-                                : 0,
-                            backgroundColor: snapshot.isDraggingOver
-                                ? snapshot.draggingOverWith === "section"
-                                    ? "white"
-                                    : "#EB5757"
-                                : "inherit",
-                            cursor: snapshot.isDraggingOver
-                                ? snapshot.draggingOverWith === "section"
-                                    ? "default"
-                                    : "no-drop"
-                                : "default",
-                        }}
-                    >
-                        {/*<TextLink value={"Add section"} onClick={() => null} />*/}
-                    </StyledSectionBreakerInner>
-                    {/*{provided.placeholder}*/}
-                </StyledSectionBreakerContainer>
-            )}
-        </Droppable>
+        <StyledSectionBreakerContainer
+            contentEditable={false}
+            style={{
+                userSelect: "none",
+            }}
+        >
+            <StyledSectionBreakerInner/>
+        </StyledSectionBreakerContainer>
+
     );
 
     return (

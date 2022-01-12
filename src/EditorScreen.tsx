@@ -1,19 +1,14 @@
 import {styled} from "@mui/material/styles";
-import React, {FC, useEffect, useRef, useState} from "react";
-import {
-    DragDropContext,
-    DropResult,
-    ResponderProvided,
-} from "react-beautiful-dnd";
-import {createEditor, Descendant, Editor, Path, Transforms} from "slate";
+import React, {FC, useEffect, useState} from "react";
+import {createEditor, Descendant, Path, Transforms} from "slate";
 import {ReactEditor, withReact} from "slate-react";
-import {getNestedObjectByKey, getNodeFromPath, getUniqueId} from "./helpers";
+import {getNestedObjectByKey, getUniqueId} from "./helpers";
 import {EmptyBlocks} from "./blockCreateTabContent";
 import {SlateEditor} from "./SlateEditor";
 import {Sidebar} from "./Sidebar";
-import {BLOCK_TYPES, CustomElement} from "./custom-editor-types";
+import {CustomElement} from "./custom-editor-types";
 import {RESOURCE_TEMPLATES} from "./ResourceExamples";
-import { Text } from 'slate';
+import {Button, Divider, Input, TextField} from "@mui/material";
 
 
 /**
@@ -23,37 +18,18 @@ import { Text } from 'slate';
  */
 export const EditorScreen: FC = () => {
 
-    //CREATE EDITOR: OPTION 1
-    // Create a Slate editor object that won't change across renders.
-    // const editor = useMemo(
-    //   () =>
-    //     withReact(
-    //       withHistory(
-    //         withInlines(withCustomNormaliser(createEditor(), toggleToolBar))
-    //       )
-    //     ),
-    //   []
-    // );
+    const [addQuestionPath, setAddQuestionPath] = useState("")
+    const [addPassagePath, setAddPassagePath] = useState("")
+    const [addParagraphPath, setAddParagraphPath] = useState("")
 
-    //CREATE EDITOR: OPTION 2
+    const [moveNodePath, setMoveNodePath] = useState("")
+    const [moveNodeId, setMoveNodeId] = useState("")
+
     const [editor] = useState(() =>
-      withReact(createEditor())
+        withReact(createEditor())
     );
 
-    //CREATE EDITOR: OPTION 3
-    // const editorRef = useRef();
-    // if (!editorRef.current)
-    //     //@ts-expect-error
-    //     editorRef.current = withReact(createEditor());
-    //
-    // const editor: (Editor & ReactEditor) | undefined =
-    //     editorRef?.current || undefined;
-
-
-
     const [value, setValue] = useState<Descendant[]>(RESOURCE_TEMPLATES["Blank"]);
-    // const debouncedValueChange = useDebounce(value, 1000);
-
 
     /**
      * Step 1 of saving a block to the resource
@@ -76,83 +52,27 @@ export const EditorScreen: FC = () => {
     };
 
     /**
-     * Function to capture illegal drag moves and issue any warnings to the user
-     * @param destinationDroppableId
-     * @param draggableId
-     */
-    const checkDragMoveIsValidOnAdd = (
-        destinationDroppableId: string,
-        draggableId: string
-    ): boolean => {
-        //CASE: If user tries to add any block that isn't a section between two sections, display warning
-        if (
-            destinationDroppableId.startsWith("resource-breaker-") &&
-            draggableId !== BLOCK_TYPES.SECTION
-        ) {
-            console.log(`You can only add sections between sections`)
-            return false;
-        } //CASE: If user tries to add a section to a block, display warning
-        else if (
-            !destinationDroppableId.startsWith("resource-breaker-") &&
-            draggableId === BLOCK_TYPES.SECTION
-        ) {
-            console.log("you can't add a section block here")
-            return false;
-        }
-        return true;
-    };
-
-    /**
      * Creates a new blank block within the editor
      * - On drag end, this is called to create node from blank template
-     * @param result
+     * @param nodeToCreateId
+     * @param pathToAddTo
      */
-    const handleCreateNewTemplateBlockFromDrag = (result: DropResult) => {
+    const handleCreateNewTemplateBlockFromDrag = (nodeToCreateId: "question" | "paragraph" | "passage", pathToAddTo: number[]) => {
+        console.log(pathToAddTo)
+        console.log(editor)
         if (editor && editor?.children) {
-            if (
-                !checkDragMoveIsValidOnAdd(
-                    result.destination?.droppableId || "",
-                    result.draggableId
-                )
-            )
-                return;
-
-            //CASE: If user tries to add section between section, create the section
-            if (
-                result.destination?.droppableId.startsWith("resource-breaker-") &&
-                result.draggableId === BLOCK_TYPES.SECTION
-            ) {
-                const insertIndex = parseInt(
-                    result.destination?.droppableId.split("resource-breaker-")[1]
-                );
-                let section: CustomElement = EmptyBlocks[BLOCK_TYPES.SECTION];
-                const section_with_unique_id = {
-                    ...section,
-                    id: section.id.concat(getUniqueId()),
-                };
-                insertNodeIntoValue(section_with_unique_id, [0, insertIndex]);
-            } else {
-                const droppablePath: number[] = ReactEditor.findPath(
-                    editor,
-                    getNestedObjectByKey(editor.children, result.destination?.droppableId)
-                );
-
-                droppablePath.splice(
-                    droppablePath.length,
-                    0,
-                    result.destination?.index!
-                );
-                // get the empty structure of the draggable block
-                let block: CustomElement = EmptyBlocks[result.draggableId];
-                const block_with_unique_id = {
-                    ...block,
-                    id: block.id.concat(getUniqueId()),
-                };
-
-                insertNodeIntoValue(block_with_unique_id, droppablePath);
+            // get the empty structure of the draggable block
+            let block: CustomElement = EmptyBlocks[nodeToCreateId];
+            const block_with_unique_id = {
+                ...block,
+                id: block.id.concat(getUniqueId())
             }
+
+            console.log(block_with_unique_id)
+            console.log(pathToAddTo)
+            insertNodeIntoValue(block_with_unique_id, pathToAddTo);
         }
-    };
+    }
 
     /**
      * Attempts to reorder the blocks and update the editor's value
@@ -160,13 +80,12 @@ export const EditorScreen: FC = () => {
      * - Then inserts node being dragged at the path of the destination
      * @param result
      */
-    const handleMoveBlockWithinResource = (result: any) => {
+    const handleMoveBlockWithinResource = (draggableID: string, droppablePath: number[]) => {
         if (editor && editor?.children) {
             try {
-
                 const draggableNode = getNestedObjectByKey(
                     editor.children,
-                    result.draggableId
+                    draggableID
                 );
 
                 const draggablePath = ReactEditor.findPath(
@@ -175,72 +94,10 @@ export const EditorScreen: FC = () => {
                     draggableNode
                 );
 
-                const droppablePath: number[] = ReactEditor.findPath(
-                    editor,
-                    getNestedObjectByKey(editor.children, result.destination.droppableId)
-                );
-
-                // droppablePath.splice(
-                //   droppablePath.length,
-                //   0,
-                //   result.destination?.index!
-                // );
-
-
-                // Transforms.removeNodes(editor, {at: draggablePath})
-
-                const jsonEditor = Array.from(editor.children)
-                console.log("REACT EDITOR", jsonEditor)
-
-                const nodeToMove = draggableNode
-                console.log("NODE TO MOVE", nodeToMove)
-
-                // try{
-                //     const nodeToMoveNoChildren = {...nodeToMove, children:[]}
-                //
-                //     const path = ReactEditor.findPath(editor, nodeToMoveNoChildren)
-                //     console.log("REACT EDITOR ATTEMPT TO GET PATH OF NODE BEING MOVED", path)
-                // }catch (e){
-                //     console.log(e)
-                // }
-
-                let path = ReactEditor.findPath(editor, nodeToMove)
-
-                console.log("REACT DRAGGABLE PATH", draggablePath)
-                console.log("REACT DROPPABLE PATH", droppablePath)
-
-                // Transforms.insertNodes(editor, draggableNode,{at: droppablePath})
-
-                //@ts-expect-error
-                if(getNodeFromPath(editor.children, droppablePath).type === "resource"){
-                    droppablePath.push(0)
-                }
-
-                console.log(Text.isText({text: ""}))
-
-                console.log("REACT DROPPABLE PATH", droppablePath)
-                Editor.withoutNormalizing(editor, () => Transforms.deselect(editor))
-                Editor.withoutNormalizing(editor, () => Transforms.moveNodes(editor, {at: path, to: droppablePath}))
-                // Edi Transforms.insertNodes(editor, nodeToMove,{at: droppablePath});
-                console.log(editor)
+                Transforms.moveNodes(editor, {at: draggablePath, to: droppablePath})
             } catch (e) {
                 console.log("could not move block")
             }
-        }
-    };
-
-    /**
-     * Once an element is dropped,
-     * i.e. once the dragging is complete, this function calls the corresponding function depending on source of drag
-     * @param result
-     */
-    const onDragEnd = (result: DropResult, provided: ResponderProvided) => {
-        if (result.destination && result.source) {
-            if (result.destination.droppableId === "create-block-sidebar") {
-                console.log("CANT DROP HERE");
-            } else if (result.source.droppableId === "create-block-sidebar") {
-                handleCreateNewTemplateBlockFromDrag(result);
-            } else handleMoveBlockWithinResource(result);
         }
     };
 
@@ -251,19 +108,75 @@ export const EditorScreen: FC = () => {
     const renderEditor = () =>
         editor && <SlateEditor editor={editor} value={value} setValue={setValue}/>;
 
+    const renderAddUtilButton = (
+        label: string,
+        valuePath: string,
+        onChange: (v: string) => void,
+        idForSource:  "question" | "paragraph" | "passage",
+        handleFunction: (id: "question" | "paragraph" | "passage", path: number[]) => void
+    ) => {
+        return(
+            <div style={{display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: 'lightpink',
+                marginBottom: '40px'}}>
+                {label}
+                <TextField
+                    value={valuePath}
+                    onChange={(event) => onChange(event.target.value)}
+                />
+                <Button onClick={() => handleFunction(
+                    idForSource,
+                    valuePath?.split(',').map(e => parseInt(e))||[]
+                )}>
+                    Go
+                </Button>
+            </div>
+        )
+    }
+
+    const renderMoveUtilButton = (
+    ) => {
+        return(
+            <div style={{display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: 'lightgray',
+                marginBottom: '40px'}}>
+                Move node: path - ID
+                <TextField
+                    value={moveNodePath}
+                    onChange={(event) => setMoveNodePath(event.target.value)}
+                /><TextField
+                    value={moveNodeId}
+                    onChange={(event) => setMoveNodeId(event.target.value)}
+                />
+                <Button onClick={() => handleMoveBlockWithinResource(
+                    moveNodeId,
+                    moveNodePath?.split(',').map(e => parseInt(e))||[]
+                )}>
+                    Go
+                </Button>
+            </div>
+        )
+    }
+
     return !editor ? <div>Loading editor...</div> : (
         <StyledScreenContainer>
-            <DragDropContext onDragEnd={onDragEnd}>
-                <StyledEditorScreen>
-                    <StyledBody>
-                        <StyledSidebar style={{width: "40%"}}>
-                            <Sidebar/>
-                        </StyledSidebar>
+            <StyledEditorScreen>
 
-                        <StyledEditorContainer>{renderEditor()}</StyledEditorContainer>
-                    </StyledBody>
-                </StyledEditorScreen>
-            </DragDropContext>
+                <StyledBody>
+                    <StyledSidebar style={{width: "40%"}}>
+                        {renderAddUtilButton("Add new question block at:",addQuestionPath, setAddQuestionPath, "question", handleCreateNewTemplateBlockFromDrag)}
+                        {renderAddUtilButton("Add new passage block at:",addPassagePath, setAddPassagePath, "passage", handleCreateNewTemplateBlockFromDrag)}
+                        {renderAddUtilButton("Add new paragraph block at:",addParagraphPath, setAddParagraphPath, "paragraph", handleCreateNewTemplateBlockFromDrag)}
+
+                        <Divider/>
+                        {renderMoveUtilButton()}
+                                      </StyledSidebar>
+
+                    <StyledEditorContainer>{renderEditor()}</StyledEditorContainer>
+                </StyledBody>
+            </StyledEditorScreen>
         </StyledScreenContainer>
     )
 };
@@ -290,6 +203,7 @@ const StyledSidebar = styled("div")(({theme}) => ({
     display: "flex",
     height: "100%",
     overflow: "auto",
+    flexDirection:"column",
     transition: `width 200ms`,
     marginTop: "10px",
 }));

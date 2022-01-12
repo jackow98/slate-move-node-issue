@@ -1,8 +1,9 @@
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import {IconButton, Typography} from "@mui/material";
 import {styled} from "@mui/material/styles";
-import React, {FC, useState} from "react";
-import {Draggable, DraggableProvided, DraggableStateSnapshot} from "react-beautiful-dnd";
+import React, {FC} from "react";
+import {DraggableProvided, DraggableStateSnapshot} from "react-beautiful-dnd";
+import {jsx} from "@emotion/react";
 
 interface BlockMenuItemProps {
     title: string;
@@ -26,38 +27,9 @@ export const BlockMenuItem: FC<BlockMenuItemProps> = ({
                                                           index,
                                                           id,
                                                       }) => {
-    const [isDragging, setIsDragging] = useState(false);
-
-    const renderMenuCardContents = () => (
-        <>
-            <div style={{width: "75%"}}>
-                <Typography variant={"h6"}>{title}</Typography>
-                <Typography
-                    variant={"body2"}
-                >
-                    {description}
-                </Typography>
-            </div>
-        </>
-    );
-
-    const renderDraggableMenuCard = (provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-        <StyledBlockMenuItem
-            {...provided.dragHandleProps}
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-        >
-            {setIsDragging(snapshot.isDragging)}
-            <IconButton style={{width: "10%"}}>
-                <DragIndicatorIcon color={"primary"}/>
-            </IconButton>
-            {renderMenuCardContents()}
-        </StyledBlockMenuItem>
-    );
 
     const renderDraggingMenuCard = (provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
         <div ref={provided.innerRef} {...provided.draggableProps}>
-            {setIsDragging(snapshot.isDragging)}
             <div {...provided.dragHandleProps}>
                 Dragging
             </div>
@@ -66,19 +38,19 @@ export const BlockMenuItem: FC<BlockMenuItemProps> = ({
 
     return (
         <div>
-            <StyledBlockMenuItem style={{display: !isDragging ? "none" : "flex"}}>
+            <StyledBlockMenuItem style={{display: "flex"}}>
                 <IconButton style={{width: "10%"}}>
                     <DragIndicatorIcon color={"primary"}/>
                 </IconButton>
-                {renderMenuCardContents()}
+                <div style={{width: "75%"}}>
+                    <Typography variant={"h6"}>{title}</Typography>
+                    <Typography
+                        variant={"body2"}
+                    >
+                        {description}
+                    </Typography>
+                </div>
             </StyledBlockMenuItem>
-            <Draggable key={id} draggableId={id} index={index}>
-                {(provided, snapshot) =>
-                    isDragging
-                        ? renderDraggingMenuCard(provided, snapshot)
-                        : renderDraggableMenuCard(provided, snapshot)
-                }
-            </Draggable>
         </div>
     );
 }

@@ -1,7 +1,6 @@
 import {Divider, Typography} from "@mui/material";
 import {styled} from "@mui/material/styles";
 import {ReactChild, ReactFragment, ReactPortal} from "react";
-import {Droppable} from "react-beautiful-dnd";
 import {BlockCreateTabContent} from "./blockCreateTabContent";
 import {BlockMenuItem} from "./BlockMenuItem";
 
@@ -11,37 +10,33 @@ import {BlockMenuItem} from "./BlockMenuItem";
  */
 export const BlockCreateTab = () => {
     return (
-        <Droppable isDropDisabled={true} droppableId={"create-block-sidebar"}>
-            {(provided, snapshot) => (
-                <StyledBlockCreateTab
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                >
-                    <Typography sx={{marginBottom: "5px"}} variant={"h2"}>
-                        Create a block
-                    </Typography>
-                    <Typography variant={"subtitle2"}>
-                        Drag and drop a block from the list below to add it to your resource
-                    </Typography>
+        <StyledBlockCreateTab
 
-                    <Divider style={{margin: "20px 0"}}/>
+        >
+            <Typography sx={{marginBottom: "5px"}} variant={"h2"}>
+                Create a block
+            </Typography>
+            <Typography variant={"subtitle2"}>
+                Drag and drop a block from the list below to add it to your resource
+            </Typography>
 
-                    {BlockCreateTabContent.map((blockCategory: { title: boolean | ReactChild | ReactFragment | ReactPortal | null | undefined; blocks: any[]; }) => (
-                        <StyledBlockCategory>
-                            <Typography variant={"h3"}>{blockCategory.title}</Typography>
-                            {blockCategory.blocks.map((block, index) => (
-                                <BlockMenuItem
-                                    id={block.blockId}
-                                    title={block.title}
-                                    description={block.description}
-                                    index={index}
-                                />
-                            ))}
-                        </StyledBlockCategory>
+            <Divider style={{margin: "20px 0"}}/>
+
+            {BlockCreateTabContent.map((blockCategory: { title: boolean | ReactChild | ReactFragment | ReactPortal | null | undefined; blocks: any[]; }) => (
+                <StyledBlockCategory>
+                    <Typography variant={"h3"}>{blockCategory.title}</Typography>
+                    {blockCategory.blocks.map((block, index) => (
+                        <BlockMenuItem
+                            id={block.blockId}
+                            title={block.title}
+                            description={block.description}
+                            index={index}
+                        />
                     ))}
-                </StyledBlockCreateTab>
-            )}
-        </Droppable>
+                </StyledBlockCategory>
+            ))}
+        </StyledBlockCreateTab>
+
     );
 };
 

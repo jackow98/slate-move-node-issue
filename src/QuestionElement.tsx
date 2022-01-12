@@ -1,8 +1,6 @@
 import {Divider, Typography} from "@mui/material";
 import {styled} from "@mui/material/styles";
 import React, {useState} from "react";
-import {Draggable, Droppable} from "react-beautiful-dnd";
-import {ReactEditor, useSlate} from "slate-react";
 import {EditableBlockContainer} from "./EditableBlockContainer";
 
 /**
@@ -15,85 +13,55 @@ import {EditableBlockContainer} from "./EditableBlockContainer";
 export const QuestionElement = (props: any) => {
     const [isDragging, setIsDragging] = useState(false);
 
-    const editor = useSlate();
-    const path = ReactEditor.findPath(editor, props.element);
-
     return (
-        <Draggable
-            key={props.element.id}
-            draggableId={props.element.id}
-            index={path[2]}
+        <EditableBlockContainer
+            {...props.attributes}
+            element={props.element}
         >
-            {(draggableProvided, draggableSnapshot) => (
-                <div
-                    ref={draggableProvided.innerRef}
-                    {...draggableProvided.draggableProps}
+            <div style={{width: "100%"}}>
+                <StyledQuestionContainer
                 >
-                    {setIsDragging(draggableSnapshot.isDragging)}
-                    {isDragging && (
-                        <div>
-                            DRAGGING
-                        </div>
-                    )}
-                    <EditableBlockContainer
-                        dragHandleProps={draggableProvided.dragHandleProps}
-                        {...props.attributes}
-                        element={props.element}
-                    >
-                        <Droppable droppableId={props.element.id}>
-                            {(droppableProvided, droppableSnapshot) => (
-                                <div style={{width: "100%"}}>
-                                    <StyledQuestionContainer
-                                        {...droppableProvided.droppableProps}
-                                        ref={droppableProvided.innerRef}
+                    {!isDragging && (
+                        <>
+                            <StyledQuestionContentColumn
+                                {...props.attributes}
+                            >
+                                <StyledHeaderRow
+                                    style={{userSelect: "none"}}
+                                    contentEditable={false}
+                                >
+                                    <Typography
+                                        variant={"h5"}
+                                        style={{userSelect: "none"}}
+                                        contentEditable={false}
                                     >
-                                        {!isDragging && (
-                                            <>
-                                                <StyledQuestionContentColumn
-                                                    {...props.attributes}
-                                                >
-                                                    <StyledHeaderRow
-                                                        style={{userSelect: "none"}}
-                                                        contentEditable={false}
-                                                    >
-                                                        <Typography
-                                                            variant={"h5"}
-                                                            style={{userSelect: "none"}}
-                                                            contentEditable={false}
-                                                        >
-                                                            Question
-                                                        </Typography>
+                                        Question
+                                    </Typography>
 
-                                                    </StyledHeaderRow>
-                                                    <div
-                                                        contentEditable={false}
-                                                        style={{userSelect: "none"}}
-                                                    >
-                                                        <Divider/>
-                                                    </div>
-
-                                                    <div style={{paddingTop: "10px"}}>
-                                                        {props.children.filter(
-                                                            (child: { props: { children: { props: { element: { type: string; }; }; }; }; }) =>
-                                                                child.props.children?.props.element.type !==
-                                                                "answer"
-                                                        )}
-                                                    </div>
-
-                                                    {droppableProvided.placeholder}
-                                                </StyledQuestionContentColumn>
-                                            </>
-                                        )}
-                                    </StyledQuestionContainer>
+                                </StyledHeaderRow>
+                                <div
+                                    contentEditable={false}
+                                    style={{userSelect: "none"}}
+                                >
+                                    <Divider/>
                                 </div>
-                            )}
-                        </Droppable>
-                    </EditableBlockContainer>
-                </div>
-            )}
-        </Draggable>
-    );
-};
+
+                                <div style={{paddingTop: "10px"}}>
+                                    {props.children.filter(
+                                        (child: { props: { children: { props: { element: { type: string; }; }; }; }; }) =>
+                                            child.props.children?.props.element.type !==
+                                            "answer"
+                                    )}
+                                </div>
+
+                            </StyledQuestionContentColumn>
+                        </>
+                    )}
+                </StyledQuestionContainer>
+            </div>
+        </EditableBlockContainer>
+    )
+}
 
 const StyledQuestionContainer = styled("div")(({theme}) => ({
     display: "flex",

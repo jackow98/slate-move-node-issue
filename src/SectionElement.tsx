@@ -1,6 +1,5 @@
 import {Divider} from "@mui/material";
 import {styled} from "@mui/material/styles";
-import {Droppable} from "react-beautiful-dnd";
 
 import {EditableBlockContainer} from "./EditableBlockContainer";
 
@@ -18,32 +17,24 @@ export const SectionElement = (props: any) => {
             elementType={"section"}
             {...props.attributes}
         >
-            <Droppable droppableId={props.element.id}>
-                {(provided, snapshot) => (
-                    <StyledSectionContainer
-                        // TODO: FIGURE OUT HOW TO ANIMATE IN
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        style={{border: "2px solid #DBDBDB"}}
-                    >
+            <StyledSectionContainer
+                style={{border: "2px solid #DBDBDB"}}
+            >
 
-                        <StyledHeaderBox
-                            style={{userSelect: "none"}}
-                            contentEditable={false}
-                        >
-                            <StyledTitleAndDescriptionColumn>
-                                Section element
-                            </StyledTitleAndDescriptionColumn>
-                            <Divider style={{marginBottom: "20px"}}/>
-                        </StyledHeaderBox>
+                <StyledHeaderBox
+                    style={{userSelect: "none"}}
+                    contentEditable={false}
+                >
+                    <StyledTitleAndDescriptionColumn>
+                        Section element
+                    </StyledTitleAndDescriptionColumn>
+                    <Divider style={{marginBottom: "20px"}}/>
+                </StyledHeaderBox>
 
-                        <StyledSectionChildrenContainer>
-                            {props.children}
-                            {provided.placeholder}
-                        </StyledSectionChildrenContainer>
-                    </StyledSectionContainer>
-                )}
-            </Droppable>
+                <StyledSectionChildrenContainer>
+                    {props.children}
+                </StyledSectionChildrenContainer>
+            </StyledSectionContainer>
         </EditableBlockContainer>
     );
 };
